@@ -20,11 +20,14 @@ class Dungeon extends Phaser.Scene{
   });
   this.physics.add.collider(this.enemies,this.enemies);
   this.physics.add.collider(this.player,this.enemies);
-  this.cameras.main.startFollow(this.player,true,.08,.08);
+  this.cameras.main.startFollow(this.player,true,1,1);
   this.cameras.main.setBounds(0,0,WORLD.w,WORLD.h);
-  this.cameras.main.setZoom(Math.min(window.innerWidth/390,window.innerHeight/690)*1.1);
+  this.cameras.main.setZoom(1);
   this.keys=this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT');
   this.setupJoystick();
+  this.fpsText=this.add.text(12,58,'FPS: …',{fontFamily:'Arial',fontSize:'15px',color:'#b5e5de',backgroundColor:'#06141caa',padding:{x:7,y:5}}).setScrollFactor(0).setDepth(60);
+  this.fpsElapsed=0;
+  this.scale.on('resize',this.positionJoystick,this);
   this.add.text(480,1195,'ВХОД В РУИНЫ',{fontFamily:'Arial',fontSize:'20px',color:'#78c9c8',letterSpacing:3}).setOrigin(.5).setAlpha(.7);
  }
  drawFloor(){
@@ -88,24 +91,42 @@ class Dungeon extends Phaser.Scene{
  }
  setupJoystick(){
   this.input.addPointer(2);
-  const base=this.add.circle(0,0,56,0x092632,.5).setStrokeStyle(3,0x72b9bb,.7).setScrollFactor(0).setDepth(50).setVisible(false);
-  const knob=this.add.circle(0,0,23,0x4db6b8,.8).setStrokeStyle(2,0xa8e5df).setScrollFactor(0).setDepth(51).setVisible(false);
+  this.joy.radius=54;
+  this.joy.base=this.add.circle(0,0,58,0x092632,.65).setStrokeStyle(3,0x72b9bb,.8).setScrollFactor(0).setDepth(50);
+  this.joy.knob=this.add.circle(0,0,23,0x4db6b8,.85).setStrokeStyle(2,0xa8e5df).setScrollFactor(0).setDepth(51);
+  this.positionJoystick();
   this.input.on('pointerdown',p=>{
-   if(this.joy.id!==null||p.x>this.scale.width*.62)return;
-   this.joy.id=p.id;this.joy.x=p.x;this.joy.y=p.y;
-   base.setPosition(p.x,p.y).setVisible(true);knob.setPosition(p.x,p.y).setVisible(true);
+   if(this.joy.id!==null)return;
+   const dx=p.x-this.joy.x,dy=p.y-this.joy.y;
+   if(Math.hypot(dx,dy)>110)return;
+   this.joy.id=p.id;
+   this.moveJoystick(p);
   });
-  this.input.on('pointermove',p=>{
+  this.input.on('pointermove',p=>{if(p.id===this.joy.id)this.moveJoystick(p);});
+  const end=p=>{
    if(p.id!==this.joy.id)return;
-   const dx=p.x-this.joy.x,dy=p.y-this.joy.y,len=Math.hypot(dx,dy),ratio=Math.min(len,55)/(len||1);
-   this.joy.dx=dx/(len||1)*Math.min(len/55,1);this.joy.dy=dy/(len||1)*Math.min(len/55,1);
-   knob.setPosition(this.joy.x+dx*ratio,this.joy.y+dy*ratio);
-  });
-  const end=p=>{if(p.id!==this.joy.id)return;this.joy.id=null;this.joy.dx=this.joy.dy=0;base.setVisible(false);knob.setVisible(false);};
-  this.input.on('pointerup',end);this.input.on('pointerupoutside',end);
+   this.joy.id=null;this.joy.dx=this.joy.dy=0;
+   this.joy.knob.setPosition(this.joy.x,this.joy.y);
+  };
+  this.input.on('pointerup',end);
+  this.input.on('pointerupoutside',end);
  }
- update(){
+ positionJoystick(){
+  this.joy.x=Math.min(90,this.scale.width*.24);
+  this.joy.y=this.scale.height-100;
+  this.joy.base.setPosition(this.joy.x,this.joy.y);
+  if(this.joy.id===null)this.joy.knob.setPosition(this.joy.x,this.joy.y);
+ }
+ moveJoystick(p){
+  const dx=p.x-this.joy.x,dy=p.y-this.joy.y,len=Math.hypot(dx,dy);
+  const power=Math.min(len/this.joy.radius,1),unit=len||1;
+  this.joy.dx=dx/unit*power;this.joy.dy=dy/unit*power;
+  this.joy.knob.setPosition(this.joy.x+this.joy.dx*this.joy.radius,this.joy.y+this.joy.dy*this.joy.radius);
+ }
+ update(time,delta){
   if(!this.player)return;
+  this.fpsElapsed+=delta;
+  if(this.fpsElapsed>=500){this.fpsText.setText('FPS: '+Math.round(this.game.loop.actualFps));this.fpsElapsed=0;}
   const k=this.keys;
   let x=this.joy.dx+(k.D.isDown||k.RIGHT.isDown?1:0)-(k.A.isDown||k.LEFT.isDown?1:0);
   let y=this.joy.dy+(k.S.isDown||k.DOWN.isDown?1:0)-(k.W.isDown||k.UP.isDown?1:0);
@@ -120,4 +141,4 @@ class Dungeon extends Phaser.Scene{
   });
  }
 }
-new Phaser.Game({type:Phaser.AUTO,parent:'game',backgroundColor:'#071923',scale:{mode:Phaser.Scale.RESIZE,autoCenter:Phaser.Scale.CENTER_BOTH,width:window.innerWidth,height:window.innerHeight},physics:{default:'arcade',arcade:{debug:false}},scene:[Dungeon],render:{pixelArt:false,antialias:true}});
+new Phaser.Game({type:Phaser.AUTO,parent:'game',backgroundColor:'#071923',scale:{mode:Phaser.Scale.RESIZE,autoCenter:Phaser.Scale.CENTER_BOTH,width:window.innerWidth,height:window.innerHeight},physics:{default:'arcade',arcade:{debug:false}},scene:[Dungeon],fps:{target:60,forceSetTimeOut:false},render:{pixelArt:false,antialias:true,roundPixels:true}});
