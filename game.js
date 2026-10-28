@@ -1,15 +1,7 @@
 const W=480,H=800;let player,enemies=[],keys={},joy={x:0,y:0},cool=0,ult=0;
 const config={type:Phaser.AUTO,parent:'game',width:W,height:H,backgroundColor:'#071d25',physics:{default:'arcade',arcade:{debug:false}},scene:{create,update}};
 new Phaser.Game(config);
-function create(){
- const s=this; s.cameras.main.setBackgroundColor('#071d25');
- for(let y=0;y<12;y++)for(let x=0;x<7;x++){let g=s.add.graphics();g.fillStyle((x+y)%3===0?0x0a2a31:0x09242b,1);g.fillRoundedRect(18+x*68+(y%2)*5,115+y*58,58,48,8);g.lineStyle(1,0x1a5860,.45);g.strokeRoundedRect(18+x*68+(y%2)*5,115+y*58,58,48,8)}
- player=s.physics.add.sprite(W/2,H/2,'deepwalker');player.setScale(.72);player.setCollideWorldBounds(true);player.body.setSize(46,58).setOffset(10,5);
- for(const p of [[120,260],[355,290],[150,570],[350,610]]) spawnEnemy(s,p[0],p[1]);
- s.add.text(18,105,'ЗАТОПЛЕННЫЕ РУИНЫ',{fontSize:'12px',color:'#7fbdba',fontStyle:'bold'});
- makeDeepwalker(s); makeEnemy(s);
- window.addEventListener('keydown',e=>keys[e.key.toLowerCase()]=true);window.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);setupJoystick();document.querySelectorAll('button').forEach(b=>b.onclick=()=>ability(+b.dataset.ability));
-}
+function create(){const s=this;s.cameras.main.setBackgroundColor('#071d25');makeDeepwalker(s);makeEnemy(s);for(let y=0;y<12;y++)for(let x=0;x<7;x++){let g=s.add.graphics();g.fillStyle((x+y)%3===0?0x0a2a31:0x09242b,1);g.fillRoundedRect(18+x*68+(y%2)*5,115+y*58,58,48,8);g.lineStyle(1,0x1a5860,.45);g.strokeRoundedRect(18+x*68+(y%2)*5,115+y*58,58,48,8)}player=s.physics.add.sprite(W/2,H/2,'deepwalker');player.setScale(.72);player.setCollideWorldBounds(true);player.body.setSize(46,58).setOffset(10,5);for(const p of [[120,260],[355,290],[150,570],[350,610]])spawnEnemy(s,p[0],p[1]);s.add.text(18,105,'ЗАТОПЛЕННЫЕ РУИНЫ',{fontSize:'12px',color:'#7fbdba',fontStyle:'bold'});window.addEventListener('keydown',e=>keys[e.key.toLowerCase()]=true);window.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);setupJoystick();document.querySelectorAll('button').forEach(b=>b.onclick=()=>ability(+b.dataset.ability))}
 function makeDeepwalker(s){let g=s.make.graphics({x:0,y:0,add:false});g.fillStyle(0x123f49);g.fillEllipse(32,34,42,54);g.fillStyle(0x267887);g.fillEllipse(32,25,27,22);g.fillStyle(0x7ee8d8);g.fillCircle(25,24,3);g.fillCircle(39,24,3);g.fillStyle(0x9b6b42);g.fillRect(44,25,7,44);g.fillTriangle(50,23,63,31,50,38);g.fillStyle(0x46a89e);g.fillTriangle(14,8,24,16,11,20);g.fillTriangle(50,8,40,16,53,20);g.generateTexture('deepwalker',64,78);g.destroy()}
 function makeEnemy(s){let g=s.make.graphics({x:0,y:0,add:false});g.fillStyle(0x522b5b);g.fillCircle(20,20,16);g.fillStyle(0xec77bd);g.fillCircle(14,17,3);g.fillCircle(26,17,3);g.lineStyle(3,0xa84668);g.strokeCircle(20,20,17);g.generateTexture('enemy',40,40);g.destroy()}
 function spawnEnemy(s,x,y){let e=s.physics.add.sprite(x,y,'enemy');e.setScale(.8);e.hp=40;e.next=0;enemies.push(e)}
