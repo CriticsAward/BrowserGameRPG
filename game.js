@@ -22,7 +22,7 @@ class Dungeon extends Phaser.Scene{
   this.physics.add.collider(this.player,this.enemies);
   this.cameras.main.startFollow(this.player,true,1,1);
   this.cameras.main.setBounds(0,0,WORLD.w,WORLD.h);
-  this.cameras.main.setZoom(1);
+  this.fitCamera();
   this.keys=this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT');
   this.setupJoystick();
   this.fpsElement=document.getElementById('fps');
@@ -30,7 +30,7 @@ class Dungeon extends Phaser.Scene{
   this.diagnostic=false;
   this.testButton=document.getElementById('testMode');
   this.testButton.addEventListener('click',()=>{this.diagnostic=!this.diagnostic;this.testButton.textContent=this.diagnostic?'Тест: без карты':'Тест: обычный';this.floorImage.setVisible(!this.diagnostic);this.lightImage.setVisible(!this.diagnostic);this.wallVisuals.forEach(v=>v.setVisible(!this.diagnostic));this.enemies.children.iterate(e=>e.setVisible(!this.diagnostic));});
-  this.scale.on('resize',()=>{this.positionJoystick();this.cameras.main.setZoom(1);});
+  this.scale.on('resize',()=>{this.positionJoystick();this.fitCamera();});
   this.add.text(480,1195,'ВХОД В РУИНЫ',{fontFamily:'Arial',fontSize:'20px',color:'#78c9c8',letterSpacing:3}).setOrigin(.5).setAlpha(.7);
  }
  drawFloor(){
@@ -100,6 +100,11 @@ class Dungeon extends Phaser.Scene{
   p.fillStyle(0xa9536c).fillTriangle(10,17,2,2,26,24).fillTriangle(74,17,82,2,58,24);
   p.generateTexture('crab',84,70);p.destroy();
  }
+ fitCamera(){
+  const w=this.scale.width,h=this.scale.height;
+  // Fill the entire viewport, even on unusually tall mobile screens.
+  this.cameras.main.setZoom(Math.max(w/WORLD.w,h/WORLD.h)*1.02);
+ }
  setupJoystick(){
   this.input.addPointer(2);
   this.joy.radius=54;
@@ -137,7 +142,7 @@ class Dungeon extends Phaser.Scene{
  update(time,delta){
   if(!this.player)return;
   this.fpsElapsed+=delta;
-  if(this.fpsElapsed>=500){this.fpsElement.textContent='v0.5 · FPS: '+Math.round(this.game.loop.actualFps)+' · '+(this.game.renderer.type===Phaser.WEBGL?'WebGL':'Canvas');this.fpsElapsed=0;}
+  if(this.fpsElapsed>=500){this.fpsElement.textContent='v0.6 · FPS: '+Math.round(this.game.loop.actualFps)+' · '+(this.game.renderer.type===Phaser.WEBGL?'WebGL':'Canvas');this.fpsElapsed=0;}
   const k=this.keys;
   let x=this.joy.dx+(k.D.isDown||k.RIGHT.isDown?1:0)-(k.A.isDown||k.LEFT.isDown?1:0);
   let y=this.joy.dy+(k.S.isDown||k.DOWN.isDown?1:0)-(k.W.isDown||k.UP.isDown?1:0);
