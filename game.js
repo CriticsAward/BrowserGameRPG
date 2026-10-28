@@ -25,7 +25,7 @@ class Dungeon extends Phaser.Scene{
   this.cameras.main.setZoom(1);
   this.keys=this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT');
   this.setupJoystick();
-  this.fpsText=this.add.text(12,58,'FPS: …',{fontFamily:'Arial',fontSize:'15px',color:'#b5e5de',backgroundColor:'#06141caa',padding:{x:7,y:5}}).setScrollFactor(0).setDepth(60);
+  this.fpsElement=document.getElementById('fps');
   this.fpsElapsed=0;
   this.scale.on('resize',this.positionJoystick,this);
   this.add.text(480,1195,'ВХОД В РУИНЫ',{fontFamily:'Arial',fontSize:'20px',color:'#78c9c8',letterSpacing:3}).setOrigin(.5).setAlpha(.7);
@@ -126,7 +126,7 @@ class Dungeon extends Phaser.Scene{
  update(time,delta){
   if(!this.player)return;
   this.fpsElapsed+=delta;
-  if(this.fpsElapsed>=500){this.fpsText.setText('FPS: '+Math.round(this.game.loop.actualFps));this.fpsElapsed=0;}
+  if(this.fpsElapsed>=500){this.fpsElement.textContent='FPS: '+Math.round(this.game.loop.actualFps);this.fpsElapsed=0;}
   const k=this.keys;
   let x=this.joy.dx+(k.D.isDown||k.RIGHT.isDown?1:0)-(k.A.isDown||k.LEFT.isDown?1:0);
   let y=this.joy.dy+(k.S.isDown||k.DOWN.isDown?1:0)-(k.W.isDown||k.UP.isDown?1:0);
