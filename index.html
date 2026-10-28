@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <title>Глубинщик — Browser RPG</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="game-shell">
+    <div id="hud"><div><b>ГЛУБИНЩИК</b><span id="level">Ур. 1</span></div><div class="bar"><i id="hp"></i></div><span id="hp-text">100 / 100</span></div>
+    <div id="game"></div>
+    <div id="controls"><div id="joystick"><div id="stick"></div></div><div id="actions"><button data-ability="1">УДАР</button><button data-ability="2">ВОЛНА</button><button data-ability="3" class="ult">УЛЬТА</button></div></div>
+    <div id="hint">Двигай джойстиком • обычная атака срабатывает сама</div>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
