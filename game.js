@@ -22,12 +22,15 @@ class Dungeon extends Phaser.Scene{
   this.physics.add.collider(this.player,this.enemies);
   this.cameras.main.startFollow(this.player,true,1,1);
   this.cameras.main.setBounds(0,0,WORLD.w,WORLD.h);
-  this.cameras.main.setZoom(Math.min(this.scale.width/620,this.scale.height/920));
+  this.cameras.main.setZoom(1);
   this.keys=this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT');
   this.setupJoystick();
   this.fpsElement=document.getElementById('fps');
   this.fpsElapsed=0;
-  this.scale.on('resize',()=>{this.positionJoystick();this.cameras.main.setZoom(Math.min(this.scale.width/620,this.scale.height/920));});
+  this.diagnostic=false;
+  this.testButton=document.getElementById('testMode');
+  this.testButton.addEventListener('click',()=>{this.diagnostic=!this.diagnostic;this.testButton.textContent=this.diagnostic?'Тест: без карты':'Тест: обычный';this.floorImage.setVisible(!this.diagnostic);this.lightImage.setVisible(!this.diagnostic);this.wallVisuals.forEach(v=>v.setVisible(!this.diagnostic));this.enemies.children.iterate(e=>e.setVisible(!this.diagnostic));});
+  this.scale.on('resize',()=>{this.positionJoystick();this.cameras.main.setZoom(1);});
   this.add.text(480,1195,'ВХОД В РУИНЫ',{fontFamily:'Arial',fontSize:'20px',color:'#78c9c8',letterSpacing:3}).setOrigin(.5).setAlpha(.7);
  }
  drawFloor(){
@@ -55,16 +58,18 @@ class Dungeon extends Phaser.Scene{
   g.generateTexture('floor-baked',WORLD.w,WORLD.h);
   light.generateTexture('light-baked',WORLD.w,WORLD.h);
   g.destroy();light.destroy();
-  this.add.image(0,0,'floor-baked').setOrigin(0).setDepth(0);
-  this.add.image(0,0,'light-baked').setOrigin(0).setDepth(1);
+  this.floorImage=this.add.image(0,0,'floor-baked').setOrigin(0).setDepth(0);
+  this.lightImage=this.add.image(0,0,'light-baked').setOrigin(0).setDepth(1);
  }
  addWalls(){
   const blocks=[[480,50,950,70],[480,1230,950,70],[35,640,70,1200],[925,640,70,1200],[210,450,115,115],[750,350,115,115],[270,810,115,115],[735,925,115,115]];
+  this.wallVisuals=[];
   blocks.forEach(([x,y,w,h])=>{
    const shadow=this.add.rectangle(x+9,y+13,w,h,0x031018,.7).setDepth(2);
    const rect=this.add.rectangle(x,y,w,h,0x1a3b49).setStrokeStyle(5,0x3e7180).setDepth(3);
-   this.add.rectangle(x,y-h*.22,w*.83,Math.max(9,h*.18),0x356474,.75).setDepth(4);
+   const trim=this.add.rectangle(x,y-h*.22,w*.83,Math.max(9,h*.18),0x356474,.75).setDepth(4);this.wallVisuals.push(trim);
    this.physics.add.existing(rect,true);this.walls.add(rect);
+   this.wallVisuals.push(shadow,rect);
   });
  }
  makeTextures(){
@@ -132,7 +137,7 @@ class Dungeon extends Phaser.Scene{
  update(time,delta){
   if(!this.player)return;
   this.fpsElapsed+=delta;
-  if(this.fpsElapsed>=500){this.fpsElement.textContent='v0.4 · FPS: '+Math.round(this.game.loop.actualFps);this.fpsElapsed=0;}
+  if(this.fpsElapsed>=500){this.fpsElement.textContent='v0.5 · FPS: '+Math.round(this.game.loop.actualFps)+' · '+(this.game.renderer.type===Phaser.WEBGL?'WebGL':'Canvas');this.fpsElapsed=0;}
   const k=this.keys;
   let x=this.joy.dx+(k.D.isDown||k.RIGHT.isDown?1:0)-(k.A.isDown||k.LEFT.isDown?1:0);
   let y=this.joy.dy+(k.S.isDown||k.DOWN.isDown?1:0)-(k.W.isDown||k.UP.isDown?1:0);
@@ -140,7 +145,7 @@ class Dungeon extends Phaser.Scene{
   this.player.setVelocity(x/n*185,y/n*185);
   if(Math.abs(x)>.05)this.player.setFlipX(x<0);
   this.enemies.children.iterate(e=>{
-   if(!e||!e.active)return;
+   if(!e||!e.active||this.diagnostic){if(e)e.setVelocity(0,0);return;}
    const d=Phaser.Math.Distance.Between(e.x,e.y,this.player.x,this.player.y);
    if(d<370&&d>64){this.physics.moveToObject(e,this.player,78);e.setFlipX(e.x>this.player.x);}
    else e.setVelocity(0,0);
