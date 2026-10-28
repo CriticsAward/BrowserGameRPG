@@ -2,7 +2,7 @@
 const WORLD={w:960,h:1280};
 class Dungeon extends Phaser.Scene{
  constructor(){super('Dungeon');this.joy={id:null,x:0,y:0,dx:0,dy:0};}
- preload(){ this.load.spritesheet('deepwalker','assets/deepwalker-directions.svg',{frameWidth:128,frameHeight:128}); }
+ preload(){ this.load.spritesheet('deepwalker','https://raw.githubusercontent.com/CriticsAward/BrowserGameRPG/feature/deepwalker-v1.1/assets/deepwalker-directions.svg',{frameWidth:128,frameHeight:128}); }
  create(){
   this.cameras.main.setBackgroundColor('#071923');
   this.physics.world.setBounds(45,45,WORLD.w-90,WORLD.h-90);
