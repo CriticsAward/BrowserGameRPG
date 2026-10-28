@@ -6,15 +6,15 @@
 <meta name="theme-color" content="#071923">
 <title>Глубинщик — первое подземелье</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#071923;font-family:Arial,sans-serif;touch-action:none}#game{width:100%;height:100%;display:flex;justify-content:center;align-items:center}canvas{display:block;touch-action:none}.hud{position:fixed;top:max(16px,env(safe-area-inset-top));left:16px;right:16px;pointer-events:none;color:#e1f4f3;display:flex;justify-content:space-between;gap:10px;text-shadow:0 2px 8px #000}.hud strong{font-size:13px;letter-spacing:.08em}.hud small{display:block;font-size:11px;color:#89abb2;margin-top:4px}.tag{padding:9px 12px;background:#06141cba;border:1px solid #46717c66;border-radius:10px}.fps{position:fixed;z-index:100;top:calc(max(16px,env(safe-area-inset-top)) + 69px);left:16px;color:#c5fff0;background:#06141ce8;border:1px solid #46717c88;border-radius:8px;padding:7px 11px;font-size:15px;font-weight:bold;font-variant-numeric:tabular-nums;pointer-events:none}.footer{position:fixed;bottom:max(12px,env(safe-area-inset-bottom));right:14px;color:#8caeb7;font-size:11px;pointer-events:none;text-align:right}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100dvh;overflow:hidden;background:#071923;font-family:Arial,sans-serif;touch-action:none}#game{position:fixed;inset:0;width:100vw;height:100dvh;overflow:hidden}canvas{display:block;touch-action:none}.hud{position:fixed;top:max(16px,env(safe-area-inset-top));left:16px;right:16px;pointer-events:none;color:#e1f4f3;display:flex;justify-content:space-between;gap:10px;text-shadow:0 2px 8px #000}.hud strong{font-size:13px;letter-spacing:.08em}.hud small{display:block;font-size:11px;color:#89abb2;margin-top:4px}.tag{padding:9px 12px;background:#06141cba;border:1px solid #46717c66;border-radius:10px}.fps{position:fixed;z-index:100;top:calc(max(16px,env(safe-area-inset-top)) + 69px);left:16px;color:#c5fff0;background:#06141ce8;border:1px solid #46717c88;border-radius:8px;padding:7px 11px;font-size:15px;font-weight:bold;font-variant-numeric:tabular-nums;pointer-events:none}.footer{position:fixed;bottom:max(12px,env(safe-area-inset-bottom));right:14px;color:#8caeb7;font-size:11px;pointer-events:none;text-align:right}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.min.js"></script>
 </head>
 <body>
 <div id="game"></div>
-<div class="hud"><div class="tag"><strong>ГЛУБИНЩИК</strong><small>Затонувшие руины · версия 0.4 · управление</small></div><div class="tag"><strong>2 ПРОТИВНИКА</strong><small>Исследование и движение</small></div></div>
-<div id="fps" class="fps">v0.4 · FPS: …</div>
-<div class="footer">Джойстик слева · WASD / стрелки на ПК</div>
-<script src="./game.js?v=0.4"></script>
+<div class="hud"><div class="tag"><strong>ГЛУБИНЩИК</strong><small>Затонувшие руины · версия 0.5 · диагностика</small></div><div class="tag"><strong>2 ПРОТИВНИКА</strong><small>Исследование и движение</small></div></div>
+<div id="fps" class="fps">v0.5 · FPS: …</div>
+<button id="testMode" style="position:fixed;z-index:110;top:calc(max(16px,env(safe-area-inset-top)) + 112px);left:16px;padding:9px 12px;border-radius:8px;border:1px solid #72b9bb;background:#082631;color:#d8fffa;font-weight:bold">Тест: обычный</button><div class="footer">Джойстик слева · WASD / стрелки на ПК</div>
+<script src="./game.js?v=0.5"></script>
 </body>
 </html>
