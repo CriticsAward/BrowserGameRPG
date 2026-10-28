@@ -119,14 +119,14 @@ class Dungeon extends Phaser.Scene{
  }
  moveJoystick(p){
   const dx=p.x-this.joy.x,dy=p.y-this.joy.y,len=Math.hypot(dx,dy);
-  const power=Math.min(len/this.joy.radius,1),unit=len||1;
+  const power=len>8?1:0,unit=len||1;
   this.joy.dx=dx/unit*power;this.joy.dy=dy/unit*power;
   this.joy.knob.setPosition(this.joy.x+this.joy.dx*this.joy.radius,this.joy.y+this.joy.dy*this.joy.radius);
  }
  update(time,delta){
   if(!this.player)return;
   this.fpsElapsed+=delta;
-  if(this.fpsElapsed>=500){this.fpsElement.textContent='FPS: '+Math.round(this.game.loop.actualFps);this.fpsElapsed=0;}
+  if(this.fpsElapsed>=500){this.fpsElement.textContent='v0.3 · FPS: '+Math.round(this.game.loop.actualFps);this.fpsElapsed=0;}
   const k=this.keys;
   let x=this.joy.dx+(k.D.isDown||k.RIGHT.isDown?1:0)-(k.A.isDown||k.LEFT.isDown?1:0);
   let y=this.joy.dy+(k.S.isDown||k.DOWN.isDown?1:0)-(k.W.isDown||k.UP.isDown?1:0);
