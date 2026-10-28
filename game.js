@@ -2,7 +2,7 @@
 const WORLD={w:960,h:1280};
 class Dungeon extends Phaser.Scene{
  constructor(){super('Dungeon');this.joy={id:null,x:0,y:0,dx:0,dy:0};}
- preload(){ this.load.spritesheet('deepwalker','https://raw.githubusercontent.com/CriticsAward/BrowserGameRPG/prototype/first-dungeon/assets/deepwalker-directions.svg',{frameWidth:128,frameHeight:128}); }
+ preload(){ this.load.image('deepwalker','https://raw.githubusercontent.com/CriticsAward/BrowserGameRPG/prototype/first-dungeon/assets/deepwalker-directions.svg'); }
  create(){
   this.cameras.main.setBackgroundColor('#071923');
   this.physics.world.setBounds(45,45,WORLD.w-90,WORLD.h-90);
@@ -10,7 +10,7 @@ class Dungeon extends Phaser.Scene{
   this.walls=this.physics.add.staticGroup();
   this.addWalls();
   this.makeTextures();
-  this.player=this.physics.add.sprite(480,1060,'deepwalker',0).setDepth(5).setCircle(26,14,25);
+  this.player=this.physics.add.sprite(480,1060,'deepwalker').setCrop(0,0,128,128).setDepth(5).setCircle(26,14,25);
   this.player.setCollideWorldBounds(true).setMaxVelocity(220);
   this.physics.add.collider(this.player,this.walls);
   this.enemies=this.physics.add.group();
@@ -138,8 +138,8 @@ class Dungeon extends Phaser.Scene{
   let y=this.joy.dy+(k.S.isDown||k.DOWN.isDown?1:0)-(k.W.isDown||k.UP.isDown?1:0);
   const n=Math.hypot(x,y)||1;
   this.player.setVelocity(x/n*185,y/n*185);
-  if(Math.abs(x)>.05){ this.player.setFrame(x<0?1:3); }
-  else if(Math.abs(y)>.05){ this.player.setFrame(y<0?2:0); }
+  if(Math.abs(x)>.05){ this.player.setCrop((x<0?1:3)*128,0,128,128); }
+  else if(Math.abs(y)>.05){ this.player.setCrop((y<0?2:0)*128,0,128,128); }
   this.enemies.children.iterate(e=>{
    if(!e||!e.active||this.diagnostic){if(e)e.setVelocity(0,0);return;}
    const d=Phaser.Math.Distance.Between(e.x,e.y,this.player.x,this.player.y);
