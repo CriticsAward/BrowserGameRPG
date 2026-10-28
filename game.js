@@ -30,7 +30,7 @@ class Dungeon extends Phaser.Scene{
   this.diagnostic=false;
   this.testButton=document.getElementById('testMode');
   this.testButton.addEventListener('click',()=>{this.diagnostic=!this.diagnostic;this.testButton.textContent=this.diagnostic?'Тест: без карты':'Тест: обычный';this.floorImage.setVisible(!this.diagnostic);this.lightImage.setVisible(!this.diagnostic);this.wallVisuals.forEach(v=>v.setVisible(!this.diagnostic));this.enemies.children.iterate(e=>e.setVisible(!this.diagnostic));});
-  this.scale.on('resize',()=>{this.positionJoystick();this.fitCamera();});
+  this.scale.on('resize',()=>{this.fitCamera();});
   this.add.text(480,1195,'ВХОД В РУИНЫ',{fontFamily:'Arial',fontSize:'20px',color:'#78c9c8',letterSpacing:3}).setOrigin(.5).setAlpha(.7);
  }
  drawFloor(){
@@ -101,48 +101,37 @@ class Dungeon extends Phaser.Scene{
   p.generateTexture('crab',84,70);p.destroy();
  }
  fitCamera(){
+  // The camera owns the game world. Screen controls live in DOM, not in world units.
   const w=this.scale.width,h=this.scale.height;
-  // Fill the entire viewport, even on unusually tall mobile screens.
-  this.cameras.main.setZoom(Math.max(w/WORLD.w,h/WORLD.h)*1.02);
+  this.cameras.main.setViewport(0,0,w,h);
+  this.cameras.main.setZoom(Math.max(w/WORLD.w,h/WORLD.h,0.75));
  }
  setupJoystick(){
-  this.input.addPointer(2);
-  this.joy.radius=54;
-  this.joy.base=this.add.circle(0,0,58,0x092632,.65).setStrokeStyle(3,0x72b9bb,.8).setScrollFactor(0).setDepth(50);
-  this.joy.knob=this.add.circle(0,0,23,0x4db6b8,.85).setStrokeStyle(2,0xa8e5df).setScrollFactor(0).setDepth(51);
-  this.positionJoystick();
-  this.input.on('pointerdown',p=>{
-   if(this.joy.id!==null)return;
-   const dx=p.x-this.joy.x,dy=p.y-this.joy.y;
-   if(Math.hypot(dx,dy)>110)return;
-   this.joy.id=p.id;
-   this.moveJoystick(p);
-  });
-  this.input.on('pointermove',p=>{if(p.id===this.joy.id)this.moveJoystick(p);});
-  const end=p=>{
-   if(p.id!==this.joy.id)return;
-   this.joy.id=null;this.joy.dx=this.joy.dy=0;
-   this.joy.knob.setPosition(this.joy.x,this.joy.y);
+  const zone=document.getElementById('joystick');
+  const knob=document.getElementById('joystickKnob');
+  const joy=this.joy;
+  const reset=()=>{joy.id=null;joy.dx=0;joy.dy=0;knob.style.transform='translate(0px,0px)';};
+  const move=e=>{
+   if(joy.id!==e.pointerId)return;
+   const rect=zone.getBoundingClientRect();
+   const x=e.clientX-(rect.left+rect.width/2),y=e.clientY-(rect.top+rect.height/2);
+   const length=Math.hypot(x,y),radius=48;
+   const power=length>7?1:0;
+   joy.dx=power*x/(length||1);joy.dy=power*y/(length||1);
+   const distance=Math.min(length,radius);
+   knob.style.transform='translate('+joy.dx*distance+'px,'+joy.dy*distance+'px)';
   };
-  this.input.on('pointerup',end);
-  this.input.on('pointerupoutside',end);
+  zone.addEventListener('pointerdown',e=>{if(joy.id!==null)return;e.preventDefault();joy.id=e.pointerId;zone.setPointerCapture(e.pointerId);move(e);});
+  zone.addEventListener('pointermove',move);
+  zone.addEventListener('pointerup',reset);
+  zone.addEventListener('pointercancel',reset);
+  zone.addEventListener('lostpointercapture',reset);
  }
- positionJoystick(){
-  this.joy.x=Math.min(90,this.scale.width*.24);
-  this.joy.y=Math.max(80,this.scale.height-105);
-  this.joy.base.setPosition(this.joy.x,this.joy.y);
-  if(this.joy.id===null)this.joy.knob.setPosition(this.joy.x,this.joy.y);
- }
- moveJoystick(p){
-  const dx=p.x-this.joy.x,dy=p.y-this.joy.y,len=Math.hypot(dx,dy);
-  const power=len>8?1:0,unit=len||1;
-  this.joy.dx=dx/unit*power;this.joy.dy=dy/unit*power;
-  this.joy.knob.setPosition(this.joy.x+this.joy.dx*this.joy.radius,this.joy.y+this.joy.dy*this.joy.radius);
- }
+
  update(time,delta){
   if(!this.player)return;
   this.fpsElapsed+=delta;
-  if(this.fpsElapsed>=500){this.fpsElement.textContent='v0.6 · FPS: '+Math.round(this.game.loop.actualFps)+' · '+(this.game.renderer.type===Phaser.WEBGL?'WebGL':'Canvas');this.fpsElapsed=0;}
+  if(this.fpsElapsed>=500){this.fpsElement.textContent='v0.7 · FPS: '+Math.round(this.game.loop.actualFps)+' · '+(this.game.renderer.type===Phaser.WEBGL?'WebGL':'Canvas');this.fpsElapsed=0;}
   const k=this.keys;
   let x=this.joy.dx+(k.D.isDown||k.RIGHT.isDown?1:0)-(k.A.isDown||k.LEFT.isDown?1:0);
   let y=this.joy.dy+(k.S.isDown||k.DOWN.isDown?1:0)-(k.W.isDown||k.UP.isDown?1:0);
@@ -157,4 +146,15 @@ class Dungeon extends Phaser.Scene{
   });
  }
 }
-new Phaser.Game({type:Phaser.AUTO,parent:'game',backgroundColor:'#071923',scale:{mode:Phaser.Scale.RESIZE,autoCenter:Phaser.Scale.CENTER_BOTH,width:window.innerWidth,height:window.innerHeight},physics:{default:'arcade',arcade:{debug:false}},scene:[Dungeon],fps:{target:60,forceSetTimeOut:false},render:{pixelArt:false,antialias:true,roundPixels:true,powerPreference:'high-performance'}});
+const game=new Phaser.Game({type:Phaser.AUTO,parent:'game',backgroundColor:'#071923',scale:{mode:Phaser.Scale.RESIZE,autoCenter:Phaser.Scale.CENTER_BOTH,width:window.innerWidth,height:window.innerHeight},physics:{default:'arcade',arcade:{debug:false}},scene:[Dungeon],fps:{target:60,forceSetTimeOut:false},render:{pixelArt:false,antialias:true,roundPixels:true,powerPreference:'high-performance'}});
+
+// Keep the actual Phaser canvas in sync with the visual viewport.
+const syncViewport=()=>{
+ const w=document.documentElement.clientWidth,h=window.visualViewport?.height||window.innerHeight;
+ if(w>0&&h>0&&game.scale&&(game.scale.width!==Math.round(w)||game.scale.height!==Math.round(h))){
+  game.scale.resize(Math.round(w),Math.round(h));
+ }
+};
+window.addEventListener('resize',syncViewport);
+window.visualViewport?.addEventListener('resize',syncViewport);
+setTimeout(syncViewport,100);
