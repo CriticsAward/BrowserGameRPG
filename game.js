@@ -22,12 +22,12 @@ class Dungeon extends Phaser.Scene{
   this.physics.add.collider(this.player,this.enemies);
   this.cameras.main.startFollow(this.player,true,1,1);
   this.cameras.main.setBounds(0,0,WORLD.w,WORLD.h);
-  this.cameras.main.setZoom(1);
+  this.cameras.main.setZoom(Math.min(this.scale.width/620,this.scale.height/920));
   this.keys=this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT');
   this.setupJoystick();
   this.fpsElement=document.getElementById('fps');
   this.fpsElapsed=0;
-  this.scale.on('resize',this.positionJoystick,this);
+  this.scale.on('resize',()=>{this.positionJoystick();this.cameras.main.setZoom(Math.min(this.scale.width/620,this.scale.height/920));});
   this.add.text(480,1195,'ВХОД В РУИНЫ',{fontFamily:'Arial',fontSize:'20px',color:'#78c9c8',letterSpacing:3}).setOrigin(.5).setAlpha(.7);
  }
  drawFloor(){
@@ -51,6 +51,12 @@ class Dungeon extends Phaser.Scene{
    for(let r=120;r>0;r-=12){light.fillStyle(0x1b9b9d,.012).fillCircle(x,y,r);}
    light.fillStyle(0x54d2c7,.5).fillCircle(x,y,5);
   });
+  // Bake static graphics once instead of rebuilding their geometry every frame.
+  g.generateTexture('floor-baked',WORLD.w,WORLD.h);
+  light.generateTexture('light-baked',WORLD.w,WORLD.h);
+  g.destroy();light.destroy();
+  this.add.image(0,0,'floor-baked').setOrigin(0).setDepth(0);
+  this.add.image(0,0,'light-baked').setOrigin(0).setDepth(1);
  }
  addWalls(){
   const blocks=[[480,50,950,70],[480,1230,950,70],[35,640,70,1200],[925,640,70,1200],[210,450,115,115],[750,350,115,115],[270,810,115,115],[735,925,115,115]];
@@ -113,7 +119,7 @@ class Dungeon extends Phaser.Scene{
  }
  positionJoystick(){
   this.joy.x=Math.min(90,this.scale.width*.24);
-  this.joy.y=this.scale.height-100;
+  this.joy.y=Math.max(80,this.scale.height-105);
   this.joy.base.setPosition(this.joy.x,this.joy.y);
   if(this.joy.id===null)this.joy.knob.setPosition(this.joy.x,this.joy.y);
  }
@@ -126,7 +132,7 @@ class Dungeon extends Phaser.Scene{
  update(time,delta){
   if(!this.player)return;
   this.fpsElapsed+=delta;
-  if(this.fpsElapsed>=500){this.fpsElement.textContent='v0.3 · FPS: '+Math.round(this.game.loop.actualFps);this.fpsElapsed=0;}
+  if(this.fpsElapsed>=500){this.fpsElement.textContent='v0.4 · FPS: '+Math.round(this.game.loop.actualFps);this.fpsElapsed=0;}
   const k=this.keys;
   let x=this.joy.dx+(k.D.isDown||k.RIGHT.isDown?1:0)-(k.A.isDown||k.LEFT.isDown?1:0);
   let y=this.joy.dy+(k.S.isDown||k.DOWN.isDown?1:0)-(k.W.isDown||k.UP.isDown?1:0);
@@ -141,4 +147,4 @@ class Dungeon extends Phaser.Scene{
   });
  }
 }
-new Phaser.Game({type:Phaser.AUTO,parent:'game',backgroundColor:'#071923',scale:{mode:Phaser.Scale.RESIZE,autoCenter:Phaser.Scale.CENTER_BOTH,width:window.innerWidth,height:window.innerHeight},physics:{default:'arcade',arcade:{debug:false}},scene:[Dungeon],fps:{target:60,forceSetTimeOut:false},render:{pixelArt:false,antialias:true,roundPixels:true}});
+new Phaser.Game({type:Phaser.AUTO,parent:'game',backgroundColor:'#071923',scale:{mode:Phaser.Scale.RESIZE,autoCenter:Phaser.Scale.CENTER_BOTH,width:window.innerWidth,height:window.innerHeight},physics:{default:'arcade',arcade:{debug:false}},scene:[Dungeon],fps:{target:60,forceSetTimeOut:false},render:{pixelArt:false,antialias:true,roundPixels:true,powerPreference:'high-performance'}});
